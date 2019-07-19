@@ -1,0 +1,10 @@
+(executables
+ (names ws leak)
+ (public_names deribit-ws-cli deribit-leak-test)
+ (modules ws leak)
+ (package deribit-ws-async)
+ (preprocess (pps ppx_jane ppx_sexp_conv))
+ (libraries
+   logs-async-reporter
+   deribit-ws
+   deribit-ws-async))
