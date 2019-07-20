@@ -38,7 +38,7 @@ module Ptime = struct
       (fun ts -> match Ptime.of_float_s (ts /. 1e3) with
          | None -> invalid_arg "Ptime.encoding"
          | Some ts -> ts)
-      float
+      (ranged_float ~minimum:1e12 ~maximum:max_float "us_encoding")
 
   let us_encoding =
     let open Json_encoding in
@@ -47,7 +47,7 @@ module Ptime = struct
       (fun ts -> match Ptime.of_float_s (ts /. 1e6) with
          | None -> invalid_arg "Ptime.encoding"
          | Some ts -> ts)
-      float
+      (ranged_float ~minimum:1e15 ~maximum:max_float "us_encoding")
 
   let encoding =
     let open Json_encoding in
