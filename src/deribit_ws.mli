@@ -57,7 +57,7 @@ type book = {
 
 type trade = {
   symbol: string ;
-  id: int64 ;
+  id: string ;
   seq: int64 ;
   ts: Ptime.t ;
   price: float ;

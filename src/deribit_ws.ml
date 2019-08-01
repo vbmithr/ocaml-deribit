@@ -239,7 +239,7 @@ let book_encoding =
 
 type trade = {
   symbol: string ;
-  id: int64 ;
+  id: string ;
   seq: int64 ;
   ts: Ptime.t ;
   price: float ;
@@ -270,9 +270,6 @@ let tickDirection_encoding =
     (function 0 -> `PlusTick | 1 -> `ZeroPlusTick | 2 -> `MinusTick | _ -> `ZeroMinusTick)
     (ranged_int ~minimum:0 ~maximum:3 "tickDirection")
 
-let strint =
-  conv Int64.to_string Int64.of_string string
-
 let trade_encoding =
   let open Json_encoding in
   conv
@@ -283,7 +280,7 @@ let trade_encoding =
        { symbol ; id ; seq ; ts ; price ; indexPrice ;
          iv ; size ; side ; tickDirection ; liquidation })
     (merge_objs
-       (obj1 (req "trade_id" strint))
+       (obj1 (req "trade_id" string))
        (obj10
           (req "trade_seq" int53)
           (req "timestamp" Ptime.encoding)
