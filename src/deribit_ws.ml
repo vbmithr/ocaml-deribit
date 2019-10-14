@@ -246,15 +246,15 @@ type trade = {
   indexPrice: float ;
   iv: float option ;
   size: int64 ;
-  side: [`Buy | `Sell] ;
-  tickDirection: [`PlusTick | `ZeroPlusTick | `MinusTick | `ZeroMinusTick] ;
+  side: Fixtypes.Side.t ;
+  tickDirection: Fixtypes.TickDirection.t ;
   liquidation: [`Maker | `Taker | `Both] option ;
 } [@@deriving sexp]
 
 let side_encoding =
   string_enum [
-    "buy", `Buy ;
-    "sell", `Sell ;
+    "buy", Fixtypes.Side.Buy ;
+    "sell", Sell ;
   ]
 
 let liquidation_encoding =
@@ -266,8 +266,16 @@ let liquidation_encoding =
 
 let tickDirection_encoding =
   conv
-    (function `PlusTick -> 0 | `ZeroPlusTick -> 1 | `MinusTick -> 2 | `ZeroMinusTick -> 3)
-    (function 0 -> `PlusTick | 1 -> `ZeroPlusTick | 2 -> `MinusTick | _ -> `ZeroMinusTick)
+    (function
+      | Fixtypes.TickDirection.PlusTick -> 0
+      | ZeroPlusTick -> 1
+      | MinusTick -> 2
+      | ZeroMinusTick -> 3)
+    (function
+      | 0 -> PlusTick
+      | 1 -> ZeroPlusTick
+      | 2 -> MinusTick
+      | _ -> ZeroMinusTick)
     (ranged_int ~minimum:0 ~maximum:3 "tickDirection")
 
 let trade_encoding =

@@ -64,8 +64,8 @@ type trade = {
   indexPrice: float ;
   iv: float option ;
   size: int64 ;
-  side: [`Buy | `Sell] ;
-  tickDirection: [`PlusTick | `ZeroPlusTick | `MinusTick | `ZeroMinusTick] ;
+  side: Fixtypes.Side.t ;
+  tickDirection: Fixtypes.TickDirection.t ;
   liquidation: [`Maker | `Taker | `Both] option ;
 } [@@deriving sexp]
 

@@ -3,7 +3,7 @@
  (public_name deribit-ws)
  (modules deribit_ws)
  (preprocess (pps ppx_sexp_conv))
- (libraries sexplib ptime uri ocplib-json-typed ezjsonm))
+ (libraries fixtypes sexplib ptime uri ocplib-json-typed ezjsonm))
 
 (library
  (name        deribit_ws_async)
