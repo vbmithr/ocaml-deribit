@@ -1,6 +1,14 @@
 open Sexplib.Std
 open Json_encoding
 
+let scheme = "https"
+let host = "www.deribit.com"
+let testnet_host = "test.deribit.com"
+let path = "ws/api/v2"
+
+let url = Uri.make ~scheme ~host ~path ()
+let url_test = Uri.make ~scheme ~host:testnet_host ~path ()
+
 module Ezjsonm_encoding = struct
   include Json_encoding.Make(Json_repr.Ezjsonm)
 

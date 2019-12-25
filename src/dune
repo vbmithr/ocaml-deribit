@@ -10,4 +10,4 @@
  (public_name deribit-ws-async)
  (modules deribit_ws_async)
  (preprocess (pps ppx_sexp_conv))
- (libraries ezjsonm deribit_ws core async fastws-async))
+ (libraries uri-sexp ezjsonm deribit_ws core async fastws-async))

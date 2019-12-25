@@ -1,10 +1,10 @@
 open Core
 open Async
+open Deribit_ws
 
 let rec inner = function
-  | 0 -> Deferred.unit
-  | n when n > 0 ->
-    Deribit_ws_async.with_connection_exn begin fun _r _w ->
+  | 0 -> Deferred.unit  | n when n > 0 ->
+    Deribit_ws_async.with_connection_exn url_test begin fun _r _w ->
       Logs_async.app (fun m -> m "inner %d" n)
     end >>= fun () ->
     Clock_ns.after (Time_ns.Span.of_int_sec 3) >>= fun () ->
