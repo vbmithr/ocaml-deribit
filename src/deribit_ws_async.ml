@@ -26,16 +26,13 @@ module T = struct
 end
 include T
 
-let connect url =
-  Deferred.Or_error.map
-    (Fastws_async.EZ.connect url) ~f:begin fun { r; w; _ } ->
-    let client_read = Pipe.map r ~f:begin fun msg ->
-        Ezjsonm_encoding.destruct_safe encoding
-          (Ezjsonm.from_string msg)
-      end in
-    let ws_read, client_write = Pipe.create () in
-    (Pipe.closed client_write >>> fun () -> Pipe.close w) ;
-    don't_wait_for @@
+let create_client_read =
+  Pipe.map ~f:begin fun msg ->
+    Ezjsonm_encoding.destruct_safe encoding (Ezjsonm.from_string msg)
+  end
+
+let create_client_write w =
+  Pipe.create_writer begin fun ws_read ->
     Pipe.transfer ws_read w ~f:begin fun cmd ->
       let doc =
         match Ezjsonm_encoding.construct encoding cmd with
@@ -43,8 +40,15 @@ let connect url =
         | _ -> invalid_arg "not a json document" in
       Log.debug (fun m -> m "-> %s" doc) ;
       doc
-    end ;
-    create client_read client_write
+    end
+  end
+
+let connect url =
+  Deferred.Or_error.map
+    (Fastws_async.EZ.connect url) ~f:begin fun { r; w; _ } ->
+    let client_write = create_client_write w in
+    (Pipe.closed client_write >>> fun () -> Pipe.close w) ;
+    create (create_client_read r) client_write
   end
 
 module Persistent = struct
@@ -61,22 +65,7 @@ let connect_exn url =
 
 let with_connection url f =
   Fastws_async.EZ.with_connection url ~f:begin fun r w ->
-    let r = Pipe.map r ~f:begin fun msg ->
-        Ezjsonm_encoding.destruct_safe encoding (Ezjsonm.from_string msg)
-      end in
-    let ws_read, client_write = Pipe.create () in
-    don't_wait_for @@
-    Pipe.transfer ws_read w ~f:begin fun cmd ->
-      let doc =
-        match Ezjsonm_encoding.construct encoding cmd with
-        | `A _ | `O _ as a -> Ezjsonm.to_string a
-        | _ -> invalid_arg "not a json document" in
-      Log.debug (fun m -> m "-> %s" doc) ;
-      doc
-    end ;
-    Monitor.protect
-      (fun () -> f r client_write)
-      ~finally:(fun () -> Pipe.close_read ws_read ; Deferred.unit)
+    f (create_client_read r) (create_client_write w)
   end
 
 let with_connection_exn url f =
