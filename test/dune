@@ -5,6 +5,7 @@
  (package deribit-ws)
  (preprocess (pps ppx_jane ppx_sexp_conv))
  (libraries
-   logs-async-reporter
    deribit-ws
-   deribit-ws-async))
+   fastws-async
+   logs-async
+   logs-async-reporter))

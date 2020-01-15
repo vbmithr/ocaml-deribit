@@ -17,6 +17,9 @@ let process_user_cmd w =
     | "trades" :: syms ->
       let syms = List.map syms ~f:(fun s -> trade_chan s) in
       Pipe.write w (Subscribe { id = get_id () ; body = syms})
+    | "perp" :: syms ->
+      let syms = List.map syms ~f:(fun s -> perp_chan s) in
+      Pipe.write w (Subscribe { id = get_id () ; body = syms})
     | "books" :: syms ->
       let syms = List.map syms ~f:(fun s -> book_chan s) in
       Pipe.write w (Subscribe { id = get_id () ; body = syms})
@@ -48,7 +51,7 @@ let process_user_cmd w =
   loop ()
 
 let main () =
-  Deribit_ws_async.with_connection_exn url begin fun r w ->
+  Fastws_async.with_connection ~of_string ~to_string url begin fun r w ->
     let log_incoming msg = Log_async.debug (fun m -> m "%a" pp msg) in
     Deferred.all_unit [
       process_user_cmd w ;

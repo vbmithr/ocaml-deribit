@@ -20,14 +20,12 @@ end
 type channel =
   | Trades of string
   | Book of string
+  | Perp of string
 [@@deriving sexp]
 
 val trade_chan : string -> channel
 val book_chan : string -> channel
-
-(* val pp_print_channel : Format.formatter -> channel -> unit
- * val channel_of_string : string -> channel
- * val channel_encoding : channel Json_encoding.encoding *)
+val perp_chan : string -> channel
 
 type msg = {
   code: int ;
@@ -72,6 +70,12 @@ type trade = {
   liquidation: [`Maker | `Taker | `Both] option ;
 } [@@deriving sexp]
 
+type perp = {
+  ts: Ptime.t ;
+  interest: float ;
+  indexPrice: float ;
+} [@@deriving sexp_of]
+
 type 'a request = {
   id: int;
   body: 'a ;
@@ -83,7 +87,8 @@ type t =
   | Subscriptions of channel list response
   | Quotes of book
   | Trades of trade list
-[@@deriving sexp]
+  | Perp of string * perp
+[@@deriving sexp_of]
 
 val encoding : t Json_encoding.encoding
 val pp : Format.formatter -> t -> unit

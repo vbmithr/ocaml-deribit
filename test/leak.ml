@@ -4,7 +4,8 @@ open Deribit_ws
 
 let rec inner = function
   | 0 -> Deferred.unit  | n when n > 0 ->
-    Deribit_ws_async.with_connection_exn url_test begin fun _r _w ->
+    Fastws_async.with_connection
+      url_test ~of_string ~to_string begin fun _r _w ->
       Logs_async.app (fun m -> m "inner %d" n)
     end >>= fun () ->
     Clock_ns.after (Time_ns.Span.of_int_sec 3) >>= fun () ->

@@ -76,15 +76,18 @@ end
 type channel =
   | Trades of string
   | Book of string
+  | Perp of string
 [@@deriving sexp]
 
 let trade_chan sym = Trades sym
 let book_chan sym = Book sym
+let perp_chan sym = Perp sym
 
 let channel_of_string s =
   match String.split_on_char '.' s with
   | ["trades"; instr; "raw"] -> Some (Trades instr)
   | ["book"; instr; "raw"] -> Some (Book instr)
+  | ["perpetual"; instr; "raw"] -> Some (Perp instr)
   | _ -> None
 
 let channel_of_string_exn s =
@@ -96,7 +99,8 @@ let channel_encoding =
   conv
     (function
       | Trades instr -> "trades." ^ instr ^ ".raw"
-      | Book instr -> "book." ^ instr ^ ".raw")
+      | Book instr -> "book." ^ instr ^ ".raw"
+      | Perp instr -> "perpetual." ^ instr ^ ".raw")
     channel_of_string_exn string
 
 type 'a request = {
@@ -259,6 +263,22 @@ type trade = {
   liquidation: [`Maker | `Taker | `Both] option ;
 } [@@deriving sexp]
 
+type perp = {
+  ts: Ptime.t ;
+  interest: float ;
+  indexPrice: float ;
+} [@@deriving sexp_of]
+
+let perp =
+  conv
+    (fun _ -> assert false)
+    (fun (ts, interest, indexPrice) ->
+       { ts; interest; indexPrice })
+    (obj3
+       (req "timestamp" Ptime.encoding)
+       (req "interest" float)
+       (req "index_price" float))
+
 let side_encoding =
   string_enum [
     "buy", Fixtypes.Side.Buy ;
@@ -315,7 +335,8 @@ type t =
   | Subscriptions of channel list response
   | Quotes of book
   | Trades of trade list
-[@@deriving sexp]
+  | Perp of string * perp
+[@@deriving sexp_of]
 
 let encoding =
   let open Json_encoding in
@@ -335,6 +356,10 @@ let encoding =
     case (update_encoding book_encoding)
       (function Quotes t -> Some { channel = Book "" ; data = t } | _ -> None)
       (fun { channel = _ ; data } -> Quotes data) ;
+    case (update_encoding perp)
+      (fun _ -> assert false)
+      (function { channel = Perp instr; data } -> Perp (instr, data)
+              | _ -> assert false) ;
   ]
 
 let pp ppf t =
