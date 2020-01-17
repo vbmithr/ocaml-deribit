@@ -15,9 +15,6 @@ depends: [
   "uri" {>= "3.1.0"}
   "ocplib-json-typed" {>= "0.7.1"}
   "ezjsonm" {>= "1.1.0"}
-  "fastws-async" {= version}
-  "logs-async" {= version}
-  "logs-async-reporter" {= version}
 ]
 synopsis: "Deribit API"
 description: """

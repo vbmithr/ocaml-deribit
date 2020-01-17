@@ -2,7 +2,7 @@
  (names ws leak)
  (public_names deribit-ws-cli deribit-leak-test)
  (modules ws leak)
- (package deribit-ws)
+ (package deribit-bin)
  (preprocess (pps ppx_jane ppx_sexp_conv))
  (libraries
    deribit-ws
