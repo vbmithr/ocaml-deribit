@@ -40,7 +40,6 @@ module Ptime = struct
     sexp_of_string (to_rfc3339 ~frac_s:7 t)
 
   let ms_encoding =
-    let open Json_encoding in
     conv
       (fun t -> 1e3 *. Ptime.to_float_s t)
       (fun ts -> match Ptime.of_float_s (ts /. 1e3) with
@@ -49,7 +48,6 @@ module Ptime = struct
       (ranged_float ~minimum:1e12 ~maximum:max_float "us_encoding")
 
   let us_encoding =
-    let open Json_encoding in
     conv
       (fun t -> 1e6 *. Ptime.to_float_s t)
       (fun ts -> match Ptime.of_float_s (ts /. 1e6) with
@@ -57,9 +55,15 @@ module Ptime = struct
          | Some ts -> ts)
       (ranged_float ~minimum:1e15 ~maximum:max_float "us_encoding")
 
+  let epoch_encoding =
+    conv
+      (fun t -> Ptime.to_float_s t)
+      (fun _ -> Ptime.epoch)
+      (ranged_float ~minimum:0. ~maximum:0. "zero")
+
   let encoding =
-    let open Json_encoding in
     union [
+      case epoch_encoding (fun a -> Some a) (fun a -> a) ;
       case us_encoding (fun a -> Some a) (fun a -> a) ;
       case ms_encoding (fun a -> Some a) (fun a -> a) ;
     ]
@@ -77,17 +81,23 @@ type channel =
   | Trades of string
   | Book of string
   | Perp of string
+  | PriceIndex of string
+  | PriceRanking of string
 [@@deriving sexp]
 
 let trade_chan sym = Trades sym
 let book_chan sym = Book sym
 let perp_chan sym = Perp sym
+let index_chan sym = PriceIndex sym
+let ranking_chan sym = PriceRanking sym
 
 let channel_of_string s =
   match String.split_on_char '.' s with
   | ["trades"; instr; "raw"] -> Some (Trades instr)
   | ["book"; instr; "raw"] -> Some (Book instr)
   | ["perpetual"; instr; "raw"] -> Some (Perp instr)
+  | ["deribit_price_index"; instr] -> Some (PriceIndex instr)
+  | ["deribit_price_ranking"; instr] -> Some (PriceRanking instr)
   | _ -> None
 
 let channel_of_string_exn s =
@@ -100,7 +110,10 @@ let channel_encoding =
     (function
       | Trades instr -> "trades." ^ instr ^ ".raw"
       | Book instr -> "book." ^ instr ^ ".raw"
-      | Perp instr -> "perpetual." ^ instr ^ ".raw")
+      | Perp instr -> "perpetual." ^ instr ^ ".raw"
+      | PriceIndex instr -> "deribit_price_index." ^ instr
+      | PriceRanking instr -> "deribit_price_ranking." ^ instr
+    )
     channel_of_string_exn string
 
 type 'a request = {
@@ -144,7 +157,6 @@ type msg = {
 } [@@deriving sexp]
 
 let msg_encoding =
-  let open Json_encoding in
   conv
     (fun { code ; msg } -> ( code, msg))
     (fun (code, msg) -> { code ; msg })
@@ -230,7 +242,6 @@ type book = {
 } [@@deriving sexp]
 
 let book_encoding =
-  let open Json_encoding in
   conv
     (fun { ts ; symbol ; bids ; asks ; chgID ; action } ->
        let prevChgID =
@@ -279,6 +290,44 @@ let perp =
        (req "interest" float)
        (req "index_price" float))
 
+type index = {
+  ts: Ptime.t ;
+  price: float ;
+  symbol: string ;
+} [@@deriving sexp_of]
+
+let index =
+  conv
+    (fun _ -> assert false)
+    (fun (ts, price, symbol) ->
+       { ts; price; symbol })
+    (obj3
+       (req "timestamp" Ptime.encoding)
+       (req "price" float)
+       (req "index_name" string))
+
+type ranking = {
+  weight: float ;
+  ts: Ptime.t ;
+  price: float option ;
+  origPrice: float option ;
+  id: string ;
+  enabled: bool ;
+} [@@deriving sexp_of]
+
+let ranking =
+  conv
+    (fun _ -> assert false)
+    (fun (weight, ts, price, origPrice, id, enabled) ->
+       { weight; ts; price; origPrice; id; enabled })
+    (obj6
+       (req "weight" float)
+       (req "timestamp" Ptime.encoding)
+       (req "price" (option float))
+       (req "original_price" (option float))
+       (req "identifier" string)
+       (req "enabled" bool))
+
 let side_encoding =
   string_enum [
     "buy", Fixtypes.Side.Buy ;
@@ -307,7 +356,6 @@ let tickDirection_encoding =
     (ranged_int ~minimum:0 ~maximum:3 "tickDirection")
 
 let trade_encoding =
-  let open Json_encoding in
   conv
     (fun { symbol ; id ; seq ; ts ; price ; indexPrice ;
            iv ; size ; side ; tickDirection ; liquidation } ->
@@ -336,10 +384,11 @@ type t =
   | Quotes of book
   | Trades of trade list
   | Perp of string * perp
+  | PriceIndex of index
+  | PriceRanking of ranking list
 [@@deriving sexp_of]
 
 let encoding =
-  let open Json_encoding in
   union [
     case pub_subscribe_encoding
       (function Subscribe a -> Some a | _ -> None)
@@ -359,6 +408,14 @@ let encoding =
     case (update_encoding perp)
       (fun _ -> assert false)
       (function { channel = Perp instr; data } -> Perp (instr, data)
+              | _ -> assert false) ;
+    case (update_encoding index)
+      (fun _ -> assert false)
+      (function { channel = PriceIndex _; data } -> PriceIndex data
+              | _ -> assert false) ;
+    case (update_encoding (list ranking))
+      (fun _ -> assert false)
+      (function { channel = PriceRanking _; data } -> PriceRanking data
               | _ -> assert false) ;
   ]
 

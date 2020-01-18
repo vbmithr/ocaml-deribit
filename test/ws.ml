@@ -20,6 +20,12 @@ let process_user_cmd w =
     | "perp" :: syms ->
       let syms = List.map syms ~f:(fun s -> perp_chan s) in
       Pipe.write w (Subscribe { id = get_id () ; body = syms})
+    | "index" :: syms ->
+      let syms = List.map syms ~f:(fun s -> index_chan s) in
+      Pipe.write w (Subscribe { id = get_id () ; body = syms})
+    | "ranking" :: syms ->
+      let syms = List.map syms ~f:(fun s -> ranking_chan s) in
+      Pipe.write w (Subscribe { id = get_id () ; body = syms})
     | "books" :: syms ->
       let syms = List.map syms ~f:(fun s -> book_chan s) in
       Pipe.write w (Subscribe { id = get_id () ; body = syms})

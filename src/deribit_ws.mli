@@ -21,11 +21,15 @@ type channel =
   | Trades of string
   | Book of string
   | Perp of string
+  | PriceIndex of string
+  | PriceRanking of string
 [@@deriving sexp]
 
 val trade_chan : string -> channel
 val book_chan : string -> channel
 val perp_chan : string -> channel
+val index_chan : string -> channel
+val ranking_chan : string -> channel
 
 type msg = {
   code: int ;
@@ -76,6 +80,21 @@ type perp = {
   indexPrice: float ;
 } [@@deriving sexp_of]
 
+type index = {
+  ts: Ptime.t ;
+  price: float ;
+  symbol: string ;
+} [@@deriving sexp_of]
+
+type ranking = {
+  weight: float ;
+  ts: Ptime.t ;
+  price: float option ;
+  origPrice: float option ;
+  id: string ;
+  enabled: bool ;
+} [@@deriving sexp_of]
+
 type 'a request = {
   id: int;
   body: 'a ;
@@ -88,6 +107,8 @@ type t =
   | Quotes of book
   | Trades of trade list
   | Perp of string * perp
+  | PriceIndex of index
+  | PriceRanking of ranking list
 [@@deriving sexp_of]
 
 val encoding : t Json_encoding.encoding
