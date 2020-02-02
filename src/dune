@@ -1,12 +1,37 @@
 (library
+ (name        deribit)
+ (public_name deribit)
+ (modules deribit)
+ (preprocess (pps ppx_sexp_conv))
+ (libraries
+   sexplib
+   ptime
+   ocplib-json-typed))
+
+(library
  (name        deribit_ws)
  (public_name deribit-ws)
  (modules deribit_ws)
  (preprocess (pps ppx_sexp_conv))
  (libraries
+   deribit
    fixtypes
    sexplib
    ptime
    uri
    ocplib-json-typed
    ezjsonm))
+
+(library
+ (name        deribit_rest)
+ (public_name deribit-rest)
+ (modules deribit_rest)
+ (preprocess (pps ppx_sexp_conv))
+ (libraries
+   deribit
+   core
+   fixtypes
+   ptime
+   uri
+   ocplib-json-typed
+   fastrest))

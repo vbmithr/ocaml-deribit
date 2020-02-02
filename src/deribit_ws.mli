@@ -1,20 +1,11 @@
+open Deribit
+
 val url : Uri.t
 val url_test : Uri.t
 
 module Ezjsonm_encoding : sig
   include module type of Json_encoding.Make(Json_repr.Ezjsonm)
   val destruct_safe : 'a Json_encoding.encoding -> Ezjsonm.value -> 'a
-end
-
-module Ptime : sig
-  include module type of Ptime
-    with type t = Ptime.t
-     and type span = Ptime.span
-
-  val t_of_sexp : Sexplib.Sexp.t -> Ptime.t
-  val sexp_of_t : Ptime.t -> Sexplib.Sexp.t
-  val encoding : t Json_encoding.encoding
-  val us_span_encoding : span Json_encoding.encoding
 end
 
 type channel =
@@ -30,20 +21,6 @@ val book_chan : string -> channel
 val perp_chan : string -> channel
 val index_chan : string -> channel
 val ranking_chan : string -> channel
-
-type msg = {
-  code: int ;
-  msg: string
-}
-
-type 'a response = {
-  id: int ;
-  testnet: bool ;
-  result: ('a, msg) result ;
-  usIn: Ptime.t ;
-  usOut: Ptime.t ;
-  usDiff: Ptime.span ;
-} [@@deriving sexp]
 
 type quote = {
   action: [`New | `Change | `Delete] ;
