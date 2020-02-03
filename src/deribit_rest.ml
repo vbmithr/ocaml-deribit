@@ -8,9 +8,10 @@ let url_test = Uri.make ~scheme:"https" ~host:"test.deribit.com" ()
 
 module Instrument = struct
   type settlementPeriod =
+    | Perp
+    | Day
     | Week
     | Month
-    | Perp
   [@@deriving sexp_of]
 
   type spec = {
@@ -53,8 +54,9 @@ module Instrument = struct
 
   let period =
     string_enum [
-      "week", Week ;
       "perpetual", Perp ;
+      "day", Day ;
+      "week", Week ;
       "month", Month ;
     ]
 

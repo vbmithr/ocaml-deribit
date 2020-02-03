@@ -23,9 +23,10 @@ module Instrument : sig
   } [@@deriving sexp_of]
 
   and settlementPeriod =
+    | Perp
+    | Day
     | Week
     | Month
-    | Perp
 
   type t =
     | Future of spec
