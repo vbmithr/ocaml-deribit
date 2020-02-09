@@ -57,6 +57,12 @@ let process_user_cmd w =
   loop ()
 
 let main () =
+  let module Encoding = Json_encoding.Make(Json_repr.Yojson) in
+  let buf = Bi_outbuf.create 4096 in
+  let of_string s =
+    Encoding.destruct encoding (Yojson.Safe.from_string ~buf s) in
+  let to_string t =
+    Yojson.Safe.to_string ~buf (Encoding.construct encoding t) in
   Fastws_async.with_connection ~of_string ~to_string url begin fun r w ->
     let log_incoming msg = Log_async.debug (fun m -> m "%a" pp msg) in
     Deferred.all_unit [

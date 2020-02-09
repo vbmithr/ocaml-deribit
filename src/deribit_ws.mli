@@ -3,11 +3,6 @@ open Deribit
 val url : Uri.t
 val url_test : Uri.t
 
-module Ezjsonm_encoding : sig
-  include module type of Json_encoding.Make(Json_repr.Ezjsonm)
-  val destruct_safe : 'a Json_encoding.encoding -> Ezjsonm.value -> 'a
-end
-
 type channel =
   | Trades of string
   | Book of string
@@ -90,5 +85,3 @@ type t =
 
 val encoding : t Json_encoding.encoding
 val pp : Format.formatter -> t -> unit
-val of_string : string -> t
-val to_string : t -> string

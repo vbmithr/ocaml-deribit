@@ -17,6 +17,9 @@
  (preprocess (pps ppx_jane))
  (libraries
    deribit-ws
+   core
+   async
+   yojson
    fastws-async
    logs-async
    logs-async-reporter))

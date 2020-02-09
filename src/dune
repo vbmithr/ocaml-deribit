@@ -19,8 +19,7 @@
    sexplib
    ptime
    uri
-   ocplib-json-typed
-   ezjsonm))
+   ocplib-json-typed))
 
 (library
  (name        deribit_rest)

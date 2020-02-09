@@ -10,16 +10,6 @@ let path = "ws/api/v2"
 let url = Uri.make ~scheme ~host ~path ()
 let url_test = Uri.make ~scheme ~host:testnet_host ~path ()
 
-module Ezjsonm_encoding = struct
-  include Json_encoding.Make(Json_repr.Ezjsonm)
-
-  let destruct_safe encoding value =
-    try destruct encoding value with exn ->
-      Format.eprintf "%a@."
-        (Json_encoding.print_error ?print_unknown:None) exn ;
-      raise exn
-end
-
 type channel =
   | Trades of string
   | Book of string
@@ -312,12 +302,3 @@ let encoding =
 
 let pp ppf t =
   Format.fprintf ppf "%a" Sexplib.Sexp.pp (sexp_of_t t)
-
-let of_string msg =
-  Ezjsonm_encoding.destruct_safe encoding (Ezjsonm.from_string msg)
-
-let to_string t =
-  match Ezjsonm_encoding.construct encoding t with
-  | `A _ | `O _ as a -> Ezjsonm.to_string a
-  | #Json_repr.ezjsonm -> assert false
-
