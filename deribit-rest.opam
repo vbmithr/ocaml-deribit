@@ -8,17 +8,16 @@ doc: "https://vbmithr.github.io/ocaml-deribit/doc"
 build: [ "dune" "build" "-j" jobs "-p" name ]
 run-test: [ "dune" "runtest" "-j" jobs "-p" name ]
 depends: [
+  "ocaml" {>= "4.08.0"}
   "dune" {>= "1.11.4"}
   "deribit" {= version}
   "fixtypes" {= version}
   "fastrest" {= version}
-  "core" {>= "v0.12.4"}
+  "core" {>= "v0.13.0"}
   "ptime" {>= "0.8.5"}
   "uri" {>= "3.1.0"}
   "ocplib-json-typed" {>= "0.7.1"}
-  "alcotest-async" {with-test & >= "0.8.5"}
-  "logs" {with-test & >= "0.7.0" }
-  "logs-async-reporter" {with-test & = version}
+  "alcotest-async" {with-test & >= "1.0.0"}
 ]
 synopsis: "Deribit API"
 description: """

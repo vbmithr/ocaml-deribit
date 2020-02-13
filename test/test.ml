@@ -2,11 +2,12 @@ open Core
 open Async
 open Deribit_rest
 open Fixtypes
+open Alcotest_async
 
 let wrap_request
     ?(timeout=Time.Span.of_int_sec 5)
     ?(speed=`Quick) n service =
-  Alcotest_async.test_case ~timeout n speed begin fun () ->
+  test_case ~timeout n speed begin fun () ->
     (Fastrest.request service) |>
     Deferred.ignore_m
   end
@@ -14,7 +15,7 @@ let wrap_request
 let wrap_request_light
     ?(timeout=Time.Span.of_int_sec 5)
     ?(speed=`Quick) n f =
-  Alcotest_async.test_case ~timeout n speed begin fun () ->
+  test_case ~timeout n speed begin fun () ->
     f () |>
     Deferred.ignore_m
   end
@@ -37,9 +38,11 @@ let rest = [
   wrap_request "all.BTC" (Instrument.get "BTC" url) ;
 ]
 
-let () =
-  Logs.set_reporter (Logs_async_reporter.reporter ()) ;
-  Logs.set_level (Some Info) ;
-  Alcotest.run "deribit" [
+let main () =
+  run "deribit" [
     "rest", rest ;
   ]
+
+let () =
+  don't_wait_for (main ()) ;
+  never_returns (Scheduler.go ())

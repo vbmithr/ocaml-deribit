@@ -5,9 +5,7 @@
  (preprocess (pps ppx_jane))
  (libraries
    deribit-rest
-   alcotest-async
-   logs
-   logs-async-reporter))
+   alcotest-async))
 
 (executables
  (names ws leak)
