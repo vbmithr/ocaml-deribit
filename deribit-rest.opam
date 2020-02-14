@@ -17,7 +17,7 @@ depends: [
   "ptime" {>= "0.8.5"}
   "uri" {>= "3.1.0"}
   "ocplib-json-typed" {>= "0.7.1"}
-  "alcotest-async" {with-test & >= "1.0.0"}
+  "alcotest-async" {with-test & >= "1.1.0"}
 ]
 synopsis: "Deribit API"
 description: """
