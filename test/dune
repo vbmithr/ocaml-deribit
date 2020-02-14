@@ -18,6 +18,7 @@
    core
    async
    yojson
+   ocplib-json-typed
    fastws-async
    logs-async
    logs-async-reporter))

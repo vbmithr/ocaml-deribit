@@ -2,6 +2,14 @@ open Core
 open Async
 open Deribit_ws
 
+module Encoding = Json_encoding.Make(Json_repr.Yojson)
+let buf = Bi_outbuf.create 4096
+
+let of_string s =
+  Encoding.destruct encoding (Yojson.Safe.from_string ~buf s)
+let to_string t =
+  Yojson.Safe.to_string ~buf (Encoding.construct encoding t)
+
 let rec inner = function
   | 0 -> Deferred.unit  | n when n > 0 ->
     Fastws_async.with_connection
